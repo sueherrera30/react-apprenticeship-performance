@@ -1,57 +1,44 @@
-import React, {
-  useEffect,
-  useState,
-  useReducer,
-} from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import _ from 'lodash';
 import CityList from '../components/CityList';
 import { matchSorter } from 'match-sorter';
 import citiesData from '../data/us-cities.json';
 
 const Cities = () => {
-  const forceRerender = useReducer(() => ({}))[1];
-  const [cities, setCities] = useState(citiesData);
+  const [cities, setCities] = useState([]);
   const [nameFilter, setNameFilter] = useState('');
 
-  const setValue = (id, key, value) => {
+  const setValue = useCallback((id, key, value) => {
     setCities((cities) => {
       const citiesCopy = _.cloneDeep(cities);
-      const cityIndex = citiesCopy.findIndex(
-        (city) => city.id === id
-      );
+      const cityIndex = citiesCopy.findIndex((city) => city.id === id);
       citiesCopy[cityIndex][key] = value;
       return citiesCopy;
     });
-  };
+  }, []);
 
-  const getCitiesByName = () => {
+  const getCitiesByName = useMemo(() => {
     const cityName = nameFilter;
     const filteredCities = matchSorter(cities, cityName, {
       keys: ['name'],
     });
-    return filteredCities.slice(0, 100);
-  };
+    return filteredCities;
+  }, [cities, nameFilter]);
 
-  const onChangeName = (evt) => {
+  const handleNameChange = (evt) => {
     const name = evt.target.value;
     setNameFilter(name);
   };
 
   useEffect(() => {
-    setCities(citiesData);
+    setCities(citiesData.slice(0, 100));
   }, []);
 
   return (
     <div>
       <label>Find Cities</label>
-      <input value={nameFilter} onChange={onChangeName} />
-      <button onClick={forceRerender}>
-        Force Rerender
-      </button>
-      <CityList
-        cities={getCitiesByName()}
-        setValue={setValue}
-      />
+      <input value={nameFilter} onChange={handleNameChange} />
+      <CityList cities={getCitiesByName} setValue={setValue} />
     </div>
   );
 };
