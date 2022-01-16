@@ -2,6 +2,8 @@ import React, {
   useEffect,
   useState,
   useReducer,
+  useMemo,
+  useCallback,
 } from 'react';
 import _ from 'lodash';
 import CityList from '../components/CityList';
@@ -10,10 +12,10 @@ import citiesData from '../data/us-cities.json';
 
 const Cities = () => {
   const forceRerender = useReducer(() => ({}))[1];
-  const [cities, setCities] = useState(citiesData);
+  const [cities, setCities] = useState([]);
   const [nameFilter, setNameFilter] = useState('');
 
-  const setValue = (id, key, value) => {
+  const setValue = useCallback((id, key, value) => {
     setCities((cities) => {
       const citiesCopy = _.cloneDeep(cities);
       const cityIndex = citiesCopy.findIndex(
@@ -22,15 +24,15 @@ const Cities = () => {
       citiesCopy[cityIndex][key] = value;
       return citiesCopy;
     });
-  };
+  }, []);
 
-  const getCitiesByName = () => {
+  const getCitiesByName = useMemo(() => {
     const cityName = nameFilter;
     const filteredCities = matchSorter(cities, cityName, {
       keys: ['name'],
     });
-    return filteredCities.slice(0, 100);
-  };
+    return filteredCities;
+  },[cities, nameFilter]);
 
   const onChangeName = (evt) => {
     const name = evt.target.value;
@@ -38,7 +40,7 @@ const Cities = () => {
   };
 
   useEffect(() => {
-    setCities(citiesData);
+    setCities(citiesData.slice(0, 100));
   }, []);
 
   return (
@@ -49,7 +51,7 @@ const Cities = () => {
         Force Rerender
       </button>
       <CityList
-        cities={getCitiesByName()}
+        cities={getCitiesByName}
         setValue={setValue}
       />
     </div>
