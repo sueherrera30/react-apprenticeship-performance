@@ -1,59 +1,53 @@
-import React, {
-  useEffect,
-  useState,
-  useReducer,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import _ from 'lodash';
 import CityList from '../components/CityList';
 import { matchSorter } from 'match-sorter';
 import citiesData from '../data/us-cities.json';
+import { debounce } from '../utils/functions';
 
 const Cities = () => {
-  const forceRerender = useReducer(() => ({}))[1];
   const [cities, setCities] = useState([]);
   const [nameFilter, setNameFilter] = useState('');
+  const [filteredCities, setFilteredCities] = useState([]);
+  const debouncedFilterHandler = useRef(debounce(getCitiesByName, 500)).current;
 
-  const setValue = useCallback((id, key, value) => {
+  const setValue = (id, key, value) => {
     setCities((cities) => {
       const citiesCopy = _.cloneDeep(cities);
-      const cityIndex = citiesCopy.findIndex(
-        (city) => city.id === id
-      );
+      const cityIndex = citiesCopy.findIndex((city) => city.id === id);
       citiesCopy[cityIndex][key] = value;
       return citiesCopy;
     });
-  }, []);
+  };
 
-  const getCitiesByName = useMemo(() => {
-    const cityName = nameFilter;
+  function getCitiesByName(cities, cityName) {
     const filteredCities = matchSorter(cities, cityName, {
       keys: ['name'],
     });
-    return filteredCities;
-  },[cities, nameFilter]);
+    setFilteredCities(filteredCities);
+  }
 
-  const onChangeName = (evt) => {
+  const handleNameChange = (evt) => {
     const name = evt.target.value;
     setNameFilter(name);
+    debouncedFilterHandler(cities, name);
   };
 
   useEffect(() => {
-    setCities(citiesData.slice(0, 100));
+    const data = citiesData.slice(0, 100);
+    setCities(data);
+    getCitiesByName(data, '');
   }, []);
+
+  useEffect(() => {
+    getCitiesByName(cities, nameFilter);
+  }, [cities]);
 
   return (
     <div>
       <label>Find Cities</label>
-      <input value={nameFilter} onChange={onChangeName} />
-      <button onClick={forceRerender}>
-        Force Rerender
-      </button>
-      <CityList
-        cities={getCitiesByName}
-        setValue={setValue}
-      />
+      <input value={nameFilter} onChange={handleNameChange} />
+      <CityList cities={filteredCities} setValue={setValue} />
     </div>
   );
 };
