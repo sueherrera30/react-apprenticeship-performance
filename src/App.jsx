@@ -1,9 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useReducer } from 'react';
+import { CitiesProvider } from './contexts/CitiesContext';
 import { throttle } from './utils/functions';
 
 const Cities = React.lazy(() => import('./pages/Cities'));
 
 const App = () => {
+  const forceRerender = useReducer(() => ({}))[1];
   const [showCities, setShowCities] = useState(false);
   const debouncedToggleHandler = useRef(
     throttle(handleToggleClick, 2000)
@@ -16,8 +18,9 @@ const App = () => {
   return (
     <div>
       <button onClick={debouncedToggleHandler}>Toggle Cities</button>
+      <button onClick={forceRerender}>Force Rerender</button>
       <React.Suspense fallback={<div>Loading...</div>}>
-        {showCities && <Cities />}
+        <CitiesProvider>{showCities && <Cities />}</CitiesProvider>
       </React.Suspense>
     </div>
   );

@@ -1,11 +1,11 @@
 import React from 'react';
 import CityInput from './CityInput';
 
-const CityList = ({ cities, setValue }) => {
+const CityList = ({ cities }) => {
   return (
     <div>
       {cities.map((city) => (
-        <CityInput key={city.id} city={city} setValue={setValue} />
+        <CityInput key={city.id} city={city} />
       ))}
     </div>
   );
