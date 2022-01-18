@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import React from 'react';
-import { useCities } from '../contexts/CitiesContext';
+import { useCitiesUpdater } from '../contexts/CitiesContext';
 
 const CityInput = ({ city }) => {
-  const { setValue } = useCities();
+  const { setValue } = useCitiesUpdater();
   return (
     <input
       key={`${city.lat}-${city.lng}`}

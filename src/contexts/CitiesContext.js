@@ -8,10 +8,42 @@ import React, {
 import _ from 'lodash';
 import citiesData from '../data/us-cities.json';
 
-const CitiesContext = createContext();
+const CitiesStateContext = createContext();
+const CitiesUpdaterContext = createContext();
 
 const CitiesProvider = ({ children }) => {
   const [cities, setCities] = useState([]);
+
+  useEffect(() => {
+    const data = citiesData.slice(0, 100);
+    setCities(data);
+  }, []);
+
+  return (
+    <CitiesStateContext.Provider value={cities}>
+      <CitiesUpdaterContext.Provider value={setCities}>
+        {children}
+      </CitiesUpdaterContext.Provider>
+    </CitiesStateContext.Provider>
+  );
+};
+
+const useCitiesState = () => {
+  const context = useContext(CitiesStateContext);
+
+  if (context === undefined) {
+    throw new Error('useCitiesState must be used within a CitiesProvider');
+  }
+
+  return context;
+};
+
+const useCitiesUpdater = () => {
+  const setCities = useContext(CitiesUpdaterContext);
+
+  if (setCities === undefined) {
+    throw new Error('useCitiesUpdater must be used within a CitiesProvider');
+  }
 
   const setValue = (id, key, value) => {
     setCities((cities) => {
@@ -22,32 +54,7 @@ const CitiesProvider = ({ children }) => {
     });
   };
 
-  useEffect(() => {
-    const data = citiesData.slice(0, 100);
-    setCities(data);
-  }, []);
-
-  const value = useMemo(
-    () => ({
-      cities,
-      setValue,
-    }),
-    [cities]
-  );
-
-  return (
-    <CitiesContext.Provider value={value}>{children}</CitiesContext.Provider>
-  );
+  return { setValue };
 };
 
-const useCities = () => {
-  const context = useContext(CitiesContext);
-
-  if (context === undefined) {
-    throw new Error('useCities must be used within a CitiesProvider');
-  }
-
-  return context;
-};
-
-export { CitiesProvider, useCities };
+export { CitiesProvider, useCitiesState, useCitiesUpdater };

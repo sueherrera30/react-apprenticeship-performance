@@ -3,17 +3,16 @@ import CityList from '../components/CityList';
 import { matchSorter } from 'match-sorter';
 import citiesData from '../data/us-cities.json';
 import { debounce } from '../utils/functions';
-import { useCities } from '../contexts/CitiesContext';
+import { useCitiesState } from '../contexts/CitiesContext';
 
 const Cities = () => {
-  const { cities } = useCities();
+  const cities = useCitiesState();
   const [nameFilter, setNameFilter] = useState('');
   const [filteredCities, setFilteredCities] = useState([]);
   const debouncedFilterHandler = useRef(
     debounce(getCitiesByName, 1000)
   ).current;
 
-  console.log('re-render');
   function getCitiesByName(cities, cityName) {
     const filteredCities = matchSorter(cities, cityName, {
       keys: ['name'],
@@ -33,7 +32,7 @@ const Cities = () => {
   }, []);
 
   useEffect(() => {
-    console.log('cities cambio');
+    getCitiesByName(cities, nameFilter);
   }, [cities]);
 
   return (
