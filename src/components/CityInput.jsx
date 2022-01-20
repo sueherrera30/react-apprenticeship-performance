@@ -2,6 +2,7 @@ import React from 'react';
 
 const CityInput = ({ city, setValue }) => {
   return (
+
     <input
       key={`${city.lat}-${city.lng}`}
       value={city.name}
@@ -10,4 +11,4 @@ const CityInput = ({ city, setValue }) => {
   );
 };
 
-export default CityInput;
+export default React.memo(CityInput, (prepProps, nextProps) => prepProps.name === nextProps.name && prepProps.setValue === nextProps.setValue);

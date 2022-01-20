@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import _ from 'lodash';
 import CityList from '../components/CityList';
 import { matchSorter } from 'match-sorter';
@@ -8,22 +8,23 @@ const Cities = () => {
   const [cities, setCities] = useState([]);
   const [nameFilter, setNameFilter] = useState('');
 
-  const setValue = (id, key, value) => {
+  const setValue = useCallback((id, key, value) => {
     setCities((cities) => {
       const citiesCopy = _.cloneDeep(cities);
       const cityIndex = citiesCopy.findIndex((city) => city.id === id);
       citiesCopy[cityIndex][key] = value;
       return citiesCopy;
     });
-  };
+  }, []);
 
-  const getCitiesByName = () => {
+
+  const getCitiesByName = useMemo(() => {
     const cityName = nameFilter;
     const filteredCities = matchSorter(cities, cityName, {
       keys: ['name'],
     });
     return filteredCities.slice(0, 100);
-  };
+  }, [cities, nameFilter]);
 
   const handleNameChange = (evt) => {
     const name = evt.target.value;
